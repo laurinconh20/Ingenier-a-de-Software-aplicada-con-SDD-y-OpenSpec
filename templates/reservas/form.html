@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+
+{% block title %}Nueva solicitud | Reservas académicas{% endblock %}
+{% block section_name %}Solicitudes de reserva{% endblock %}
+
+{% block content %}
+<nav class="app-breadcrumb" aria-label="Migas de pan"><a href="{% url 'reservas:list' %}">Mis solicitudes</a><span aria-hidden="true">/</span><span aria-current="page">Nueva solicitud</span></nav>
+<header class="page-header"><div><p class="page-kicker">Nuevo requerimiento</p><h1>Nueva solicitud de reserva</h1><p class="page-subtitle">Selecciona un espacio y un intervalo dentro de su horario habilitado.</p></div><a class="btn btn-outline-primary" href="{% url 'reservas:availability' %}">Consultar disponibilidad</a></header>
+<div class="form-layout">
+  <section class="form-card">
+    <form method="post" novalidate>
+      {% csrf_token %}
+      {{ form.as_p }}
+      <div class="button-group"><button class="btn btn-primary" type="submit" data-busy-text="Registrando…">Registrar solicitud</button><a class="btn btn-outline-secondary" href="{% url 'reservas:list' %}">Cancelar</a></div>
+    </form>
+  </section>
+  <aside class="info-card">
+    <p class="page-kicker">Antes de enviar</p>
+    <h2 class="h5">Ten en cuenta</h2>
+    <ul class="check-list"><li>La solicitud debe iniciar en el futuro.</li><li>Debe finalizar el mismo día y dentro del horario habilitado.</li><li>La duración máxima permitida es de cuatro horas.</li><li>La disponibilidad se confirma al aprobar.</li></ul>
+  </aside>
+</div>
+{% endblock %}

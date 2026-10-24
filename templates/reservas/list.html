@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+
+{% block title %}Mis solicitudes | Reservas académicas{% endblock %}
+{% block section_name %}Mis reservas{% endblock %}
+
+{% block content %}
+<header class="page-header">
+  <div><p class="page-kicker">Seguimiento personal</p><h1>Mis solicitudes</h1><p class="page-subtitle">Consulta el estado y el historial de cada solicitud registrada.</p></div>
+  {% if perms.usuarios.crear_solicitudes %}<a class="btn btn-primary" href="{% url 'reservas:create' %}">Nueva solicitud</a>{% endif %}
+</header>
+
+<form class="filter-bar" method="get">
+  <label for="estado">Filtrar por estado</label>
+  <select id="estado" name="estado">
+    <option value="">Todos los estados</option>
+    {% for valor, etiqueta in estados %}<option value="{{ valor }}"{% if estado_actual == valor %} selected{% endif %}>{{ etiqueta }}</option>{% endfor %}
+  </select>
+  <button class="btn btn-outline-primary" type="submit">Aplicar filtro</button>
+  {% if estado_actual %}<a href="{% url 'reservas:list' %}">Limpiar</a>{% endif %}
+</form>
+
+{% if reservas %}
+  <div class="table-responsive" tabindex="0" aria-label="Solicitudes propias">
+    <table class="table">
+      <thead><tr><th>Espacio</th><th>Fecha</th><th>Horario</th><th>Estado</th><th>Acción</th></tr></thead>
+      <tbody>
+        {% for reserva in reservas %}
+          <tr>
+            <td><strong>{{ reserva.espacio.nombre }}</strong><small class="table-secondary-text">{{ reserva.espacio.ubicacion }}</small></td>
+            <td>{{ reserva.inicio|date:"d/m/Y" }}</td>
+            <td>{{ reserva.inicio|date:"H:i" }}–{{ reserva.fin|date:"H:i" }}</td>
+            <td>{% include "components/status_badge.html" with estado=reserva.estado etiqueta=reserva.get_estado_display %}</td>
+            <td><a class="btn btn-sm btn-outline-primary" href="{% url 'reservas:detail' reserva.pk %}">Ver detalle</a></td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+{% else %}
+  <section class="empty-state"><div><h2 class="h4">No hay solicitudes para mostrar</h2><p>{% if estado_actual %}Prueba con otro estado o limpia el filtro.{% else %}Consulta la disponibilidad y registra tu primera solicitud.{% endif %}</p>{% if perms.usuarios.crear_solicitudes %}<a class="btn btn-primary" href="{% url 'reservas:create' %}">Crear solicitud</a>{% endif %}</div></section>
+{% endif %}
+
+{% if is_paginated %}<nav class="pagination-nav" aria-label="Paginación">{% if page_obj.has_previous %}<a class="btn btn-outline-secondary" href="?estado={{ estado_actual }}&page={{ page_obj.previous_page_number }}">Anterior</a>{% endif %}<span>Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span>{% if page_obj.has_next %}<a class="btn btn-outline-secondary" href="?estado={{ estado_actual }}&page={{ page_obj.next_page_number }}">Siguiente</a>{% endif %}</nav>{% endif %}
+{% endblock %}

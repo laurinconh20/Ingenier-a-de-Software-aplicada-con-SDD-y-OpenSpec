@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+
+{% block title %}Eliminar horario | Reservas académicas{% endblock %}
+{% block section_name %}Horarios de espacios{% endblock %}
+
+{% block content %}
+<nav class="app-breadcrumb" aria-label="Migas de pan"><a href="{% url 'espacios:detail' object.espacio.pk %}">{{ object.espacio.nombre }}</a><span aria-hidden="true">/</span><span aria-current="page">Eliminar horario</span></nav>
+<section class="form-card danger-card">
+  <p class="page-kicker">Confirmación requerida</p>
+  <h1 class="h2">Eliminar horario</h1>
+  <p>Se eliminará la ventana <strong>{{ object.get_dia_semana_display }}, {{ object.hora_inicio|time:"H:i" }}–{{ object.hora_fin|time:"H:i" }}</strong>. Esta acción no puede deshacerse.</p>
+  <form method="post" data-confirm="¿Confirmas que deseas eliminar este horario?">
+    {% csrf_token %}
+    <div class="button-group"><button class="btn btn-danger" type="submit" data-busy-text="Eliminando…">Sí, eliminar horario</button><a class="btn btn-outline-secondary" href="{% url 'espacios:detail' object.espacio.pk %}">Volver sin cambios</a></div>
+  </form>
+</section>
+{% endblock %}

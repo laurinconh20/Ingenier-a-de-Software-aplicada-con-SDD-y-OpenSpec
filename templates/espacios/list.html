@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+
+{% block title %}Espacios | Reservas académicas{% endblock %}
+{% block section_name %}Espacios académicos{% endblock %}
+
+{% block content %}
+<header class="page-header">
+  <div>
+    <p class="page-kicker">Catálogo institucional</p>
+    <h1>Espacios académicos</h1>
+    <p class="page-subtitle">Consulta capacidad, características y horarios habilitados antes de solicitar.</p>
+  </div>
+  {% if perms.usuarios.gestionar_espacios %}
+    <a class="btn btn-primary" href="{% url 'espacios:create' %}">Registrar espacio</a>
+  {% elif perms.usuarios.crear_solicitudes %}
+    <a class="btn btn-primary" href="{% url 'reservas:availability' %}">Consultar disponibilidad</a>
+  {% endif %}
+</header>
+
+{% if espacios %}
+  <div class="space-grid">
+    {% for item in espacios %}
+      <article class="space-card">
+        <div class="space-card-top">
+          <span class="space-type">{{ item.get_tipo_display }}</span>
+          {% include "components/status_badge.html" with estado=item.activo|yesno:"activo,inactivo" etiqueta=item.activo|yesno:"Activo,Inactivo" %}
+        </div>
+        <div>
+          <h2 class="h4"><a href="{% url 'espacios:detail' item.pk %}">{{ item.nombre }}</a></h2>
+          <p class="space-location">{{ item.ubicacion }}</p>
+          <p class="space-description">{{ item.caracteristicas|default:"Sin características adicionales registradas."|truncatechars:120 }}</p>
+        </div>
+        <div class="space-card-footer">
+          <span><strong>{{ item.capacidad }}</strong> personas</span>
+          <a href="{% url 'espacios:detail' item.pk %}">Ver detalles <span aria-hidden="true">→</span></a>
+        </div>
+      </article>
+    {% endfor %}
+  </div>
+{% else %}
+  <section class="empty-state">
+    <div>
+      <h2 class="h4">No hay espacios registrados</h2>
+      <p>Cuando se agreguen laboratorios, auditorios o salas de cómputo aparecerán aquí.</p>
+      {% if perms.usuarios.gestionar_espacios %}<a class="btn btn-primary" href="{% url 'espacios:create' %}">Registrar el primero</a>{% endif %}
+    </div>
+  </section>
+{% endif %}
+{% endblock %}

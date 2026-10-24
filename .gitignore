@@ -1,0 +1,13 @@
+.env
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.coverage
+htmlcov/
+staticfiles/
+.tmp-chrome-profile/
+.tmp-visual/
+Nueva carpeta/
+Nuevo Documento de texto.txt
+

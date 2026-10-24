@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+
+{% block title %}Usuarios | Reservas académicas{% endblock %}
+{% block section_name %}Administración de usuarios{% endblock %}
+
+{% block content %}
+<header class="page-header"><div><p class="page-kicker">Control de acceso</p><h1>Usuarios</h1><p class="page-subtitle">Administra datos, estado y roles de las cuentas institucionales.</p></div><a class="btn btn-primary" href="{% url 'usuarios:create' %}">Registrar usuario</a></header>
+
+{% if usuarios %}
+  <div class="table-responsive" tabindex="0" aria-label="Usuarios">
+    <table class="table">
+      <thead><tr><th>Usuario</th><th>Correo</th><th>Rol</th><th>Estado</th><th>Acción</th></tr></thead>
+      <tbody>
+        {% for item in usuarios %}
+          <tr>
+            <td><span class="user-cell"><span class="app-avatar" aria-hidden="true">{{ item.nombre|default:item.email|first|upper }}</span><strong>{{ item.nombre }}</strong></span></td>
+            <td>{{ item.email }}</td>
+            <td>{% for grupo in item.groups.all %}<span class="role-chip">{{ grupo.name }}</span>{% empty %}<span class="text-secondary">Sin rol</span>{% endfor %}</td>
+            <td>{% include "components/status_badge.html" with estado=item.is_active|yesno:"activo,inactivo" etiqueta=item.is_active|yesno:"Activo,Inactivo" %}</td>
+            <td><a class="btn btn-sm btn-outline-primary" href="{% url 'usuarios:update' item.pk %}">Editar usuario</a></td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+{% else %}
+  <section class="empty-state"><div><h2 class="h4">No hay usuarios registrados</h2><p>Crea la primera cuenta institucional y asígnale un rol.</p><a class="btn btn-primary" href="{% url 'usuarios:create' %}">Registrar usuario</a></div></section>
+{% endif %}
+{% endblock %}

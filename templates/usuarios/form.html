@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+
+{% block title %}{% if request.resolver_match.url_name == "profile" %}Mi perfil{% elif object %}Editar usuario{% else %}Registrar usuario{% endif %} | Reservas académicas{% endblock %}
+{% block section_name %}{% if request.resolver_match.url_name == "profile" %}Mi perfil{% else %}Administración de usuarios{% endif %}{% endblock %}
+
+{% block content %}
+{% if request.resolver_match.url_name != "profile" %}<nav class="app-breadcrumb" aria-label="Migas de pan"><a href="{% url 'usuarios:list' %}">Usuarios</a><span aria-hidden="true">/</span><span aria-current="page">{% if object %}Editar{% else %}Registrar{% endif %}</span></nav>{% endif %}
+<header class="page-header"><div><p class="page-kicker">{% if request.resolver_match.url_name == "profile" %}Cuenta personal{% else %}Control de acceso{% endif %}</p><h1>{% if request.resolver_match.url_name == "profile" %}Mi perfil{% elif object %}Editar {{ object.nombre }}{% else %}Registrar usuario{% endif %}</h1><p class="page-subtitle">{% if request.resolver_match.url_name == "profile" %}Actualiza el nombre visible de tu cuenta institucional.{% else %}Los roles determinan las funciones disponibles dentro del sistema.{% endif %}</p></div></header>
+<div class="form-layout">
+  <section class="form-card">
+    <form method="post" novalidate>
+      {% csrf_token %}
+      {{ form.as_p }}
+      <div class="button-group"><button class="btn btn-primary" type="submit" data-busy-text="Guardando…">Guardar cambios</button><a class="btn btn-outline-secondary" href="{% if request.resolver_match.url_name == 'profile' %}{% url 'home' %}{% else %}{% url 'usuarios:list' %}{% endif %}">Cancelar</a></div>
+    </form>
+  </section>
+  <aside class="info-card">
+    {% if request.resolver_match.url_name == "profile" %}<p class="page-kicker">Información protegida</p><h2 class="h5">Tu acceso permanece igual</h2><p>Desde este formulario no puedes cambiar el correo, el estado ni los roles de tu propia cuenta.</p>
+    {% else %}<p class="page-kicker">Seguridad</p><h2 class="h5">Asigna sólo lo necesario</h2><p>Selecciona el rol de acuerdo con las responsabilidades institucionales del usuario.</p><ul class="check-list"><li>Solicitante: crea y consulta solicitudes propias.</li><li>Gestor: decide y consulta el historial.</li><li>Administrador: gestiona usuarios y espacios.</li></ul>{% endif %}
+  </aside>
+</div>
+{% endblock %}

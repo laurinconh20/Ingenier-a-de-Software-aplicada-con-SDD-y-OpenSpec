@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+
+{% block title %}Solicitud {{ reserva.pk }} | Reservas académicas{% endblock %}
+{% block section_name %}Detalle de solicitud{% endblock %}
+
+{% block content %}
+<nav class="app-breadcrumb" aria-label="Migas de pan"><a href="{% url 'reservas:list' %}">Mis solicitudes</a><span aria-hidden="true">/</span><span aria-current="page">Solicitud #{{ reserva.pk }}</span></nav>
+<header class="page-header"><div><p class="page-kicker">Solicitud #{{ reserva.pk }}</p><h1>{{ reserva.espacio.nombre }}</h1><p class="page-subtitle">Registrada el {{ reserva.fecha_creacion|date:"d/m/Y \a \l\a\s H:i" }}</p></div>{% include "components/status_badge.html" with estado=reserva.estado etiqueta=reserva.get_estado_display %}</header>
+
+<div class="detail-layout">
+  <section class="detail-card" aria-labelledby="reservation-data-title">
+    <h2 id="reservation-data-title" class="h4 mb-4">Datos de la reserva</h2>
+    <dl class="detail-grid"><dt>Espacio</dt><dd><a href="{% url 'espacios:detail' reserva.espacio.pk %}">{{ reserva.espacio }}</a></dd><dt>Fecha</dt><dd>{{ reserva.inicio|date:"l, d \d\e F \d\e Y" }}</dd><dt>Horario</dt><dd>{{ reserva.inicio|date:"H:i" }}–{{ reserva.fin|date:"H:i" }}</dd><dt>Estado</dt><dd>{% include "components/status_badge.html" with estado=reserva.estado etiqueta=reserva.get_estado_display %}</dd></dl>
+  </section>
+  <section class="detail-card" aria-labelledby="history-title">
+    <h2 id="history-title" class="h4 mb-4">Historial</h2>
+    {% if reserva.eventos.all %}<ol class="timeline">{% for evento in reserva.eventos.all %}<li><strong>{{ evento.get_accion_display }}</strong><small>{{ evento.fecha|date:"d/m/Y H:i" }}{% if evento.responsable %} · {{ evento.responsable.nombre }}{% endif %}</small>{% if evento.detalle %}<p>{{ evento.detalle }}</p>{% endif %}</li>{% endfor %}</ol>{% else %}<div class="empty-state empty-state-compact"><div><p class="mb-0">Sin decisiones registradas.</p></div></div>{% endif %}
+  </section>
+</div>
+
+{% if reserva.estado == "PENDIENTE" or reserva.estado == "APROBADA" %}
+  <section class="form-card danger-zone mt-4" aria-labelledby="cancel-title"><h2 id="cancel-title" class="h4">Cancelar solicitud</h2><p>La cancelación quedará registrada en el historial y no podrá revertirse.</p><form method="post" action="{% url 'reservas:cancel-own' reserva.pk %}" data-confirm="¿Confirmas que deseas cancelar esta reserva?">{% csrf_token %}{{ cancelacion_form.as_p }}<div class="button-group"><button class="btn btn-warning" type="submit" data-busy-text="Cancelando…">Cancelar reserva</button><a class="btn btn-outline-secondary" href="{% url 'reservas:list' %}">Volver a mis solicitudes</a></div></form></section>
+{% else %}<p class="mt-4"><a class="btn btn-outline-secondary" href="{% url 'reservas:list' %}">Volver a mis solicitudes</a></p>{% endif %}
+{% endblock %}

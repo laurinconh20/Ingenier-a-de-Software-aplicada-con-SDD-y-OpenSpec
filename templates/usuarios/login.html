@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+
+{% block title %}Iniciar sesión | Reservas académicas{% endblock %}
+
+{% block public_content %}
+<div class="auth-layout">
+  <section class="auth-intro" aria-labelledby="auth-title">
+    <p class="page-kicker">Universidad · Gestión académica</p>
+    <h1 id="auth-title">Los espacios que necesitas, en un solo lugar.</h1>
+    <p>Consulta disponibilidad, solicita laboratorios y auditorios, y sigue cada decisión desde una experiencia centralizada.</p>
+  </section>
+  <section class="auth-panel" aria-labelledby="login-title">
+    <div>
+      <p class="page-kicker">Acceso seguro</p>
+      <h2 id="login-title">Bienvenido de nuevo</h2>
+      <p class="page-subtitle mb-4">Ingresa con tu cuenta institucional para continuar.</p>
+      <form method="post" novalidate>
+        {% csrf_token %}
+        {% if form.non_field_errors %}
+          <div class="errorlist" role="alert">{{ form.non_field_errors }}</div>
+        {% endif %}
+        {% for field in form %}
+          <p>
+            <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+            {{ field }}
+            {% if field.errors %}<span class="errorlist" role="alert">{{ field.errors|striptags }}</span>{% endif %}
+          </p>
+        {% endfor %}
+        {% if next %}<input type="hidden" name="next" value="{{ next }}">{% endif %}
+        <button class="btn btn-primary w-100" type="submit" data-busy-text="Ingresando…">Ingresar</button>
+      </form>
+      <p class="text-secondary small mt-4 mb-0">Si no tienes acceso, comunícate con el administrador institucional.</p>
+    </div>
+  </section>
+</div>
+{% endblock %}

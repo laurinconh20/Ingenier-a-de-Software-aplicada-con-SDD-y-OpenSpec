@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+
+{% block title %}Historial global | Reservas académicas{% endblock %}
+{% block section_name %}Historial de reservas{% endblock %}
+
+{% block content %}
+<header class="page-header"><div><p class="page-kicker">Trazabilidad institucional</p><h1>Historial global</h1><p class="page-subtitle">Consulta solicitudes, decisiones y responsables usando los filtros disponibles.</p></div>{% if perms.usuarios.decidir_reservas %}<a class="btn btn-primary" href="?estado=PENDIENTE">Ver pendientes</a>{% endif %}</header>
+
+<details class="filter-panel"{% if request.GET %} open{% endif %}>
+  <summary>Filtrar resultados</summary>
+  <form class="app-filter-form" method="get">{{ filtro.as_p }}<div class="button-group"><button class="btn btn-primary" type="submit">Aplicar filtros</button><a class="btn btn-outline-secondary" href="{% url 'reservas:global-history' %}">Limpiar</a></div></form>
+</details>
+
+{% if reservas %}
+  <div class="table-responsive" tabindex="0" aria-label="Historial global">
+    <table class="table history-table">
+      <thead><tr><th>Solicitud</th><th>Solicitante</th><th>Espacio</th><th>Intervalo</th><th>Estado e historial</th><th>Acción</th></tr></thead>
+      <tbody>
+        {% for reserva in reservas %}
+          <tr>
+            <td><strong>#{{ reserva.pk }}</strong><small class="table-secondary-text">Creación: {{ reserva.fecha_creacion|date:"d/m/Y" }}</small></td>
+            <td>{{ reserva.solicitante.nombre }}<small class="table-secondary-text">{{ reserva.solicitante.email }}</small></td>
+            <td>{{ reserva.espacio.nombre }}<small class="table-secondary-text">{{ reserva.espacio.ubicacion }}</small></td>
+            <td>{{ reserva.inicio|date:"d/m/Y" }}<small class="table-secondary-text">{{ reserva.inicio|date:"H:i" }}–{{ reserva.fin|date:"H:i" }}</small></td>
+            <td>{% include "components/status_badge.html" with estado=reserva.estado etiqueta=reserva.get_estado_display %}{% if reserva.eventos.all %}<details class="event-details"><summary>Ver trazabilidad</summary><ul>{% for evento in reserva.eventos.all %}<li><strong>{{ evento.get_accion_display }}</strong> · {{ evento.fecha|date:"d/m/Y H:i" }} · {{ evento.responsable.nombre }}{% if evento.detalle %}<br>{{ evento.detalle }}{% endif %}</li>{% endfor %}</ul></details>{% endif %}</td>
+            <td><a class="btn btn-sm btn-outline-primary" href="{% url 'reservas:decision' reserva.pk %}">{% if reserva.estado == "PENDIENTE" %}Revisar{% else %}Ver detalle{% endif %}</a></td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+{% else %}
+  <section class="empty-state"><div><h2 class="h4">No hay resultados</h2><p>No se encontraron reservas con los filtros seleccionados.</p><a class="btn btn-outline-primary" href="{% url 'reservas:global-history' %}">Limpiar filtros</a></div></section>
+{% endif %}
+
+{% if is_paginated %}<nav class="pagination-nav" aria-label="Paginación">{% if page_obj.has_previous %}<a class="btn btn-outline-secondary" href="?page={{ page_obj.previous_page_number }}">Anterior</a>{% endif %}<span>Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span>{% if page_obj.has_next %}<a class="btn btn-outline-secondary" href="?page={{ page_obj.next_page_number }}">Siguiente</a>{% endif %}</nav>{% endif %}
+{% endblock %}

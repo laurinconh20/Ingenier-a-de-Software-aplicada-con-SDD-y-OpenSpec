@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+
+{% block title %}Gestionar solicitud {{ reserva.pk }} | Reservas académicas{% endblock %}
+{% block section_name %}Gestión de solicitudes{% endblock %}
+
+{% block content %}
+<nav class="app-breadcrumb" aria-label="Migas de pan"><a href="{% url 'reservas:global-history' %}">Historial global</a><span aria-hidden="true">/</span><span aria-current="page">Solicitud #{{ reserva.pk }}</span></nav>
+<header class="page-header">
+  <div><p class="page-kicker">Solicitud #{{ reserva.pk }}</p><h1>{{ reserva.espacio.nombre }}</h1><p class="page-subtitle">{{ reserva.solicitante.nombre }} · {{ reserva.inicio|date:"d/m/Y, H:i" }}–{{ reserva.fin|date:"H:i" }}</p></div>
+  {% include "components/status_badge.html" with estado=reserva.estado etiqueta=reserva.get_estado_display %}
+</header>
+
+<section class="detail-card mb-4" aria-labelledby="decision-summary-title">
+  <h2 id="decision-summary-title" class="h4 mb-4">Resumen de la solicitud</h2>
+  <dl class="detail-grid"><dt>Solicitante</dt><dd>{{ reserva.solicitante.nombre }} · {{ reserva.solicitante.email }}</dd><dt>Espacio</dt><dd><a href="{% url 'espacios:detail' reserva.espacio.pk %}">{{ reserva.espacio }}</a></dd><dt>Fecha</dt><dd>{{ reserva.inicio|date:"l, d \d\e F \d\e Y" }}</dd><dt>Horario</dt><dd>{{ reserva.inicio|date:"H:i" }}–{{ reserva.fin|date:"H:i" }}</dd><dt>Estado actual</dt><dd>{% include "components/status_badge.html" with estado=reserva.estado etiqueta=reserva.get_estado_display %}</dd></dl>
+</section>
+
+{% if reserva.estado == "PENDIENTE" %}
+  <div class="decision-grid">
+    <section class="form-card decision-card decision-approve" aria-labelledby="approve-title">
+      <p class="page-kicker">Decisión positiva</p><h2 id="approve-title" class="h4">Aprobar solicitud</h2><p>La reserva bloqueará este intervalo y la disponibilidad se validará nuevamente.</p>
+      <form method="post" action="{% url 'reservas:approve' reserva.pk %}" data-confirm="¿Confirmas la aprobación de esta solicitud?">{% csrf_token %}{{ aprobacion_form.as_p }}<button class="btn btn-success" type="submit" data-busy-text="Aprobando…">Aprobar solicitud</button></form>
+    </section>
+    <section class="form-card decision-card decision-reject" aria-labelledby="reject-title">
+      <p class="page-kicker">Decisión negativa</p><h2 id="reject-title" class="h4">Rechazar solicitud</h2><p>Indica un motivo comprensible; quedará disponible en el historial.</p>
+      <form method="post" action="{% url 'reservas:reject' reserva.pk %}" data-confirm="¿Confirmas el rechazo de esta solicitud?">{% csrf_token %}{{ rechazo_form.as_p }}<button class="btn btn-danger" type="submit" data-busy-text="Rechazando…">Rechazar solicitud</button></form>
+    </section>
+  </div>
+{% else %}
+  <div class="alert alert-info" role="status">Esta solicitud ya fue decidida. Puedes consultar su trazabilidad en el historial global.</div>
+{% endif %}
+
+{% if reserva.estado == "PENDIENTE" or reserva.estado == "APROBADA" %}
+  <section class="form-card danger-zone mt-4" aria-labelledby="admin-cancel-title"><p class="page-kicker">Operación administrativa</p><h2 id="admin-cancel-title" class="h4">Cancelar reserva</h2><p>La cancelación requiere una justificación y quedará asociada a tu usuario.</p><form method="post" action="{% url 'reservas:cancel-admin' reserva.pk %}" data-confirm="¿Confirmas la cancelación administrativa de esta reserva?">{% csrf_token %}{{ cancelacion_form.as_p }}<div class="button-group"><button class="btn btn-warning" type="submit" data-busy-text="Cancelando…">Cancelar administrativamente</button><a class="btn btn-outline-secondary" href="{% url 'reservas:global-history' %}">Volver al historial</a></div></form></section>
+{% else %}<p class="mt-4"><a class="btn btn-outline-secondary" href="{% url 'reservas:global-history' %}">Volver al historial</a></p>{% endif %}
+{% endblock %}

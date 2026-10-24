@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+
+{% block title %}Horario | Reservas académicas{% endblock %}
+{% block section_name %}Horarios de espacios{% endblock %}
+
+{% block content %}
+<nav class="app-breadcrumb" aria-label="Migas de pan"><a href="{% url 'espacios:list' %}">Espacios</a><span aria-hidden="true">/</span><a href="{% url 'espacios:detail' form.instance.espacio.pk %}">{{ form.instance.espacio.nombre }}</a><span aria-hidden="true">/</span><span aria-current="page">Horario</span></nav>
+<header class="page-header"><div><p class="page-kicker">Disponibilidad semanal</p><h1>{% if object %}Editar horario{% else %}Agregar horario{% endif %}</h1><p class="page-subtitle">La ventana debe ser válida y no superponerse con otro horario del mismo día.</p></div></header>
+<section class="form-card">
+  <form method="post" novalidate>
+    {% csrf_token %}
+    {{ form.as_p }}
+    <div class="button-group"><button class="btn btn-primary" type="submit" data-busy-text="Guardando…">Guardar horario</button><a class="btn btn-outline-secondary" href="{% url 'espacios:detail' form.instance.espacio.pk %}">Cancelar</a></div>
+  </form>
+</section>
+{% endblock %}

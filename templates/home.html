@@ -1,0 +1,113 @@
+{% extends "base.html" %}
+
+{% block title %}Inicio | Reservas académicas{% endblock %}
+
+{% block content %}
+<header class="page-header">
+  <div>
+    <p class="page-kicker">Panel principal</p>
+    <h1>Hola, {{ user.nombre|default:user.email }}</h1>
+    <p class="page-subtitle">
+      {% if dashboard_mode == "solicitante" %}Consulta el estado de tus solicitudes y encuentra tu próximo espacio.
+      {% elif dashboard_mode == "gestor" %}Revisa solicitudes pendientes y mantén al día la operación de los espacios.
+      {% else %}Supervisa la operación y accede a las herramientas administrativas.{% endif %}
+    </p>
+  </div>
+  {% if perms.usuarios.crear_solicitudes %}
+    <a class="btn btn-primary" href="{% url 'reservas:create' %}">Nueva solicitud</a>
+  {% elif perms.usuarios.decidir_reservas %}
+    <a class="btn btn-primary" href="{% url 'reservas:global-history' %}?estado=PENDIENTE">Revisar pendientes</a>
+  {% else %}
+    <a class="btn btn-primary" href="{% url 'espacios:list' %}">Explorar espacios</a>
+  {% endif %}
+</header>
+
+<section class="dashboard-metrics" aria-label="Resumen operativo">
+  {% if dashboard_mode == "solicitante" %}
+    <a class="metric-card" href="{% url 'reservas:list' %}"><span>Pendientes</span><strong>{{ metricas.PENDIENTE }}</strong><small>Esperando revisión</small></a>
+    <a class="metric-card" href="{% url 'reservas:list' %}"><span>Aprobadas</span><strong>{{ metricas.APROBADA }}</strong><small>Reservas confirmadas</small></a>
+    <a class="metric-card" href="{% url 'reservas:list' %}"><span>Finalizadas</span><strong>{{ metricas.RECHAZADA|add:metricas.CANCELADA }}</strong><small>Rechazadas o canceladas</small></a>
+  {% elif dashboard_mode == "gestor" %}
+    <a class="metric-card metric-card-highlight" href="{% url 'reservas:global-history' %}?estado=PENDIENTE"><span>Por revisar</span><strong>{{ pendientes_total }}</strong><small>Solicitudes pendientes</small></a>
+    <a class="metric-card" href="{% url 'reservas:global-history' %}"><span>Reservas</span><strong>{{ reservas_total }}</strong><small>Actividad total</small></a>
+    <a class="metric-card" href="{% url 'espacios:list' %}"><span>Catálogo</span><strong>Ver</strong><small>Espacios académicos</small></a>
+  {% elif dashboard_mode == "administrador" %}
+    <a class="metric-card" href="{% url 'usuarios:list' %}"><span>Usuarios</span><strong>{{ usuarios_total }}</strong><small>Cuentas registradas</small></a>
+    <a class="metric-card" href="{% url 'espacios:list' %}"><span>Espacios</span><strong>{{ espacios_total }}</strong><small>Recursos académicos</small></a>
+    <a class="metric-card" href="{% url 'reservas:global-history' %}"><span>Reservas</span><strong>{{ reservas_total }}</strong><small>{{ pendientes_total }} por revisar</small></a>
+  {% endif %}
+</section>
+
+<div class="dashboard-layout">
+  <section class="surface" aria-labelledby="recent-title">
+    <div class="section-heading">
+      <div>
+        <p class="page-kicker">Actividad</p>
+        <h2 id="recent-title" class="h4">Solicitudes recientes</h2>
+      </div>
+      {% if dashboard_mode == "solicitante" %}
+        <a href="{% url 'reservas:list' %}">Ver todas</a>
+      {% else %}
+        <a href="{% url 'reservas:global-history' %}">Ver historial</a>
+      {% endif %}
+    </div>
+    {% if reservas_recientes %}
+      <div class="activity-list">
+        {% for reserva in reservas_recientes %}
+          <a class="activity-item" href="{% if dashboard_mode == 'solicitante' %}{% url 'reservas:detail' reserva.pk %}{% else %}{% url 'reservas:decision' reserva.pk %}{% endif %}">
+            <span class="activity-date"><strong>{{ reserva.inicio|date:"d" }}</strong><small>{{ reserva.inicio|date:"M" }}</small></span>
+            <span class="activity-content">
+              <strong>{{ reserva.espacio.nombre }}</strong>
+              <small>{% if dashboard_mode != "solicitante" %}{{ reserva.solicitante.nombre }} · {% endif %}{{ reserva.inicio|date:"H:i" }}–{{ reserva.fin|date:"H:i" }}</small>
+            </span>
+            {% include "components/status_badge.html" with estado=reserva.estado etiqueta=reserva.get_estado_display %}
+          </a>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="empty-state empty-state-compact">
+        <div>
+          <h3 class="h5">{% if dashboard_mode == "solicitante" %}Aún no tienes solicitudes{% else %}Aún no hay actividad registrada{% endif %}</h3>
+          <p>{% if dashboard_mode == "solicitante" %}Consulta la disponibilidad y crea tu primera solicitud.{% else %}Las nuevas solicitudes aparecerán aquí.{% endif %}</p>
+        </div>
+      </div>
+    {% endif %}
+  </section>
+
+  <aside class="surface quick-actions" aria-labelledby="quick-title">
+    <p class="page-kicker">Accesos rápidos</p>
+    <h2 id="quick-title" class="h4">¿Qué necesitas hacer?</h2>
+    <div class="quick-action-list">
+      <a href="{% url 'espacios:list' %}"><strong>Explorar espacios</strong><small>Consulta capacidad, ubicación y horarios.</small></a>
+      {% if perms.usuarios.crear_solicitudes %}
+        <a href="{% url 'reservas:availability' %}"><strong>Consultar disponibilidad</strong><small>Valida un intervalo antes de solicitar.</small></a>
+        <a href="{% url 'reservas:create' %}"><strong>Crear solicitud</strong><small>Reserva un espacio académico.</small></a>
+      {% endif %}
+      {% if perms.usuarios.gestionar_espacios %}
+        <a href="{% url 'espacios:create' %}"><strong>Registrar espacio</strong><small>Amplía el catálogo institucional.</small></a>
+      {% endif %}
+      {% if perms.usuarios.gestionar_usuarios %}
+        <a href="{% url 'usuarios:create' %}"><strong>Registrar usuario</strong><small>Crea y asigna un perfil autorizado.</small></a>
+      {% endif %}
+    </div>
+  </aside>
+</div>
+{% endblock %}
+
+{% block public_content %}
+<div class="auth-layout">
+  <section class="auth-intro" aria-labelledby="landing-title">
+    <p class="page-kicker">Sistema de Gestión de Reservas Académicas</p>
+    <h1 id="landing-title">Organiza espacios sin cruces ni correos.</h1>
+    <p>Una plataforma institucional para consultar espacios, registrar solicitudes y mantener cada decisión trazable.</p>
+  </section>
+  <section class="auth-panel" aria-labelledby="landing-access-title">
+    <div>
+      <p class="page-kicker">Plataforma institucional</p>
+      <h2 id="landing-access-title">Gestiona tus reservas desde aquí</h2>
+      <p class="page-subtitle mb-4">Inicia sesión para ver las opciones habilitadas para tu perfil.</p>
+      <a class="btn btn-primary btn-lg" href="{% url 'usuarios:login' %}">Iniciar sesión</a>
+    </div>
+  </section>
+</div>
+{% endblock %}

@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+
+{% block title %}Consultar disponibilidad | Reservas académicas{% endblock %}
+{% block section_name %}Disponibilidad{% endblock %}
+
+{% block content %}
+<header class="page-header"><div><p class="page-kicker">Planea tu reserva</p><h1>Consultar disponibilidad</h1><p class="page-subtitle">Comprueba si un espacio está libre en la fecha y el horario que necesitas.</p></div>{% if perms.usuarios.crear_solicitudes %}<a class="btn btn-outline-primary" href="{% url 'reservas:create' %}">Crear solicitud</a>{% endif %}</header>
+<div class="form-layout">
+  <section class="form-card">
+    <form method="post" novalidate>
+      {% csrf_token %}
+      {{ form.as_p }}
+      <button class="btn btn-primary" type="submit" data-busy-text="Consultando…">Consultar disponibilidad</button>
+    </form>
+    {% if disponible is True %}<div class="availability-result availability-yes" role="status"><strong>Disponible</strong><span>El espacio está libre en el intervalo consultado.</span>{% if perms.usuarios.crear_solicitudes %}<a class="btn btn-success" href="{% url 'reservas:create' %}">Crear solicitud</a>{% endif %}</div>{% elif disponible is False %}<div class="availability-result availability-no" role="status"><strong>No disponible</strong><span>Ya existe una reserva aprobada que se superpone con el intervalo.</span><a href="{% url 'espacios:list' %}">Explorar otros espacios</a></div>{% endif %}
+  </section>
+  <aside class="info-card"><p class="page-kicker">Cómo funciona</p><h2 class="h5">Validación en tiempo real</h2><p>La consulta considera el estado del espacio, sus horarios habilitados y las reservas aprobadas.</p><p class="mb-0">Una respuesta disponible no bloquea el horario hasta que la solicitud sea aprobada.</p></aside>
+</div>
+{% endblock %}

@@ -1,0 +1,43 @@
+<aside id="app-navigation" class="app-sidebar" aria-label="Navegación principal">
+  <a class="app-brand" href="{% url 'home' %}">
+    <span class="app-brand-mark" aria-hidden="true">RA</span>
+    <span><strong>Reservas</strong><small>Espacios académicos</small></span>
+  </a>
+
+  <nav class="app-nav">
+    <span class="app-nav-label">Principal</span>
+    <a class="app-nav-link{% if request.resolver_match.url_name == 'home' %} active{% endif %}" href="{% url 'home' %}"{% if request.resolver_match.url_name == 'home' %} aria-current="page"{% endif %}><span aria-hidden="true">⌂</span> Inicio</a>
+    <a class="app-nav-link{% if request.resolver_match.namespace == 'espacios' %} active{% endif %}" href="{% url 'espacios:list' %}"{% if request.resolver_match.namespace == 'espacios' %} aria-current="page"{% endif %}><span aria-hidden="true">▦</span> Espacios</a>
+
+    {% if perms.usuarios.crear_solicitudes %}
+      <span class="app-nav-label">Mis reservas</span>
+      <a class="app-nav-link{% if request.resolver_match.namespace == 'reservas' and request.resolver_match.url_name == 'list' %} active{% endif %}" href="{% url 'reservas:list' %}"{% if request.resolver_match.namespace == 'reservas' and request.resolver_match.url_name == 'list' %} aria-current="page"{% endif %}>Mis solicitudes</a>
+      <a class="app-nav-link{% if request.resolver_match.url_name == 'create' and request.resolver_match.namespace == 'reservas' %} active{% endif %}" href="{% url 'reservas:create' %}"{% if request.resolver_match.url_name == 'create' and request.resolver_match.namespace == 'reservas' %} aria-current="page"{% endif %}>Nueva solicitud</a>
+      <a class="app-nav-link{% if request.resolver_match.url_name == 'availability' %} active{% endif %}" href="{% url 'reservas:availability' %}"{% if request.resolver_match.url_name == 'availability' %} aria-current="page"{% endif %}>Disponibilidad</a>
+    {% endif %}
+
+    {% if perms.usuarios.decidir_reservas or perms.usuarios.consultar_historial_global %}
+      <span class="app-nav-label">Gestión</span>
+      {% if perms.usuarios.decidir_reservas %}
+        <a class="app-nav-link" href="{% url 'reservas:global-history' %}?estado=PENDIENTE">{% if perms.usuarios.gestionar_usuarios %}Reservas{% else %}Solicitudes por gestionar{% endif %}</a>
+      {% endif %}
+      {% if perms.usuarios.consultar_historial_global %}
+        <a class="app-nav-link{% if request.resolver_match.url_name == 'global-history' %} active{% endif %}" href="{% url 'reservas:global-history' %}"{% if request.resolver_match.url_name == 'global-history' %} aria-current="page"{% endif %}>Historial global</a>
+      {% endif %}
+      {% if perms.usuarios.gestionar_espacios %}
+        <a class="app-nav-link" href="{% url 'espacios:create' %}">Registrar espacio</a>
+      {% endif %}
+      {% if perms.usuarios.gestionar_usuarios %}
+        <a class="app-nav-link{% if request.resolver_match.namespace == 'usuarios' and request.resolver_match.url_name == 'list' %} active{% endif %}" href="{% url 'usuarios:list' %}"{% if request.resolver_match.namespace == 'usuarios' and request.resolver_match.url_name == 'list' %} aria-current="page"{% endif %}>Gestionar usuarios</a>
+      {% endif %}
+    {% endif %}
+  </nav>
+
+  <div class="app-sidebar-footer">
+    <a class="app-nav-link{% if request.resolver_match.url_name == 'profile' %} active{% endif %}" href="{% url 'usuarios:profile' %}"{% if request.resolver_match.url_name == 'profile' %} aria-current="page"{% endif %}>Perfil</a>
+    <form method="post" action="{% url 'usuarios:logout' %}">
+      {% csrf_token %}
+      <button class="app-nav-link app-logout" type="submit">Cerrar sesión</button>
+    </form>
+  </div>
+</aside>

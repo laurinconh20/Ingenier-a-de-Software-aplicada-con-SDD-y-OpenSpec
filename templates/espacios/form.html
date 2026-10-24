@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+
+{% block title %}{% if object %}Editar{% else %}Registrar{% endif %} espacio | Reservas académicas{% endblock %}
+{% block section_name %}Administración de espacios{% endblock %}
+
+{% block content %}
+<nav class="app-breadcrumb" aria-label="Migas de pan"><a href="{% url 'espacios:list' %}">Espacios</a><span aria-hidden="true">/</span><span aria-current="page">{% if object %}Editar{% else %}Registrar{% endif %}</span></nav>
+<header class="page-header"><div><p class="page-kicker">Catálogo institucional</p><h1>{% if object %}Editar {{ object.nombre }}{% else %}Registrar espacio{% endif %}</h1><p class="page-subtitle">Define los datos que los usuarios consultarán en el catálogo.</p></div></header>
+<section class="form-card">
+  <form method="post" novalidate>
+    {% csrf_token %}
+    {{ form.as_p }}
+    <div class="button-group"><button class="btn btn-primary" type="submit" data-busy-text="Guardando…">Guardar espacio</button><a class="btn btn-outline-secondary" href="{% if object %}{% url 'espacios:detail' object.pk %}{% else %}{% url 'espacios:list' %}{% endif %}">Cancelar</a></div>
+  </form>
+</section>
+{% endblock %}
